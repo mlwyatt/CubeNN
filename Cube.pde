@@ -1,10 +1,38 @@
 import java.util.Map;
 
 class Cube {
-  private HashMap<String, Cubie> cubies = new HashMap<String, Cubie>();
+  private HashMap<Integer, Cubie> cubies = new HashMap<Integer, Cubie>();
+  int[] posI = new int[]{32,16,8,4,2,1};
+  int upI,downI,rightI,leftI,frontI,backI;
+  char[] posC = new char[]{'u','d','r','l','f','b'};
+  char upC,downC,rightC,leftC,frontC,backC;
+  int urf,urb,ulb,ulf,drf,drb,dlf,dlb;
+  int ur,ub,ul,uf,rf,rb,lf,lb,dr,db,dl,df;
   int size;
 
   Cube() {
+    upI=posI[0];downI=posI[1];rightI=posI[2];leftI=posI[3];frontI=posI[4];backI=posI[5];
+    upC=posC[0];downC=posC[1];rightC=posC[2];leftC=posC[3];frontC=posC[4];backC=posC[5];
+    urf = upI+rightI+frontI;
+    urb = upI+rightI+backI;
+    ulb = upI+leftI+backI;
+    ulf = upI+leftI+frontI;
+    drf = downI+rightI+frontI;
+    drb = downI+rightI+backI;
+    dlb = downI+leftI+backI;
+    dlf = downI+leftI+frontI;
+    ur = upI+rightI;
+    ub = upI+backI;
+    ul = upI+leftI;
+    uf = upI+frontI;
+    rf = rightI+frontI;
+    rb = rightI+backI;
+    lf = leftI+frontI;
+    lb = leftI+backI;
+    dr = downI+rightI;
+    db = downI+backI;
+    dl = downI+leftI;
+    df = downI+frontI;
     reset();
   }
   
@@ -34,253 +62,154 @@ class Cube {
 
   void turn(String move) {
     char[] chars = move.toCharArray();
+    int t = intPosFromChar(chars[0]);
     if (chars.length == 1) { // clock-wise
-      turn(chars[0], true);
+      turn(t, true);
     } else if (chars[1] == '2') { // clock-wise twice
-      turn(chars[0], true);
-      turn(chars[0], true);
+      turn(t, true);
+      turn(t, true);
     } else { // counter-clock-wise
-      turn(chars[0], false);
+      turn(t, false);
     }
   }
 
-  private void turn(char t, boolean clockwise) {
+  private void turn(int t, boolean clockwise) {
     int r;
-    if (t == 'u') {
+    if (t == posI[0]) {
       r = clockwise ? turnU() : turnUC();
     }
-    if (t == 'd') {
+    if (t == posI[1]) {
       r = clockwise ? turnD() : turnDC();
     }
-    if (t == 'r') {
+    if (t == posI[2]) {
       r = clockwise ? turnR() : turnRC();
     }
-    if (t == 'l') {
+    if (t == posI[3]) {
       r = clockwise ? turnL() : turnLC();
     }
-    if (t == 'f') {
+    if (t == posI[4]) {
       r = clockwise ? turnF() : turnFC();
     }
-    if (t == 'b') {
+    if (t == posI[5]) {
       r = clockwise ? turnB() : turnBC();
     }
     applyTurn(t, clockwise);
   }
 
-  private void applyTurn(char t, boolean clockwise) {
-    for (String k : cubies.keySet()) {
-      if (k.indexOf(t) > -1)
-        cubies.get(k).turn(t, clockwise);
+  private void applyTurn(int t, boolean clockwise) {
+    String binT = Integer.toBinaryString(t);
+    while (binT.length() < 8) {
+      binT = '0'+binT;
     }
+    int index = binT.indexOf('1');
+    for (int k : cubies.keySet()) {
+      String binK = Integer.toBinaryString(k);
+      while (binK.length() < 8) {
+        binK = '0'+binK;
+      }
+      Cubie cubie = cubies.get(k);
+      if (binK.charAt(index) == '1')
+        cubie.turn(t,clockwise);
+    }
+  }
+  
+  private int turn(int[] corners, int[] edges) {
+    Cubie tmp = cubies.get(corners[0]);
+    for(int i = 0; i < corners.length-1; i++) {
+      cubies.put(corners[i],cubies.get(corners[i+1]));
+    }
+    cubies.put(corners[corners.length-1],tmp);
+    
+    tmp = cubies.get(edges[0]);
+    for(int i = 0; i < edges.length-1; i++) {
+      cubies.put(edges[i],cubies.get(edges[i+1]));
+    }
+    cubies.put(edges[edges.length-1],tmp);
+    return 0;
   }
 
   private int turnU() {
-    Cubie tmp;
-    tmp = cubies.get("urf");
-    cubies.put("urf", cubies.get("urb"));
-    cubies.put("urb", cubies.get("ulb"));
-    cubies.put("ulb", cubies.get("ulf"));
-    cubies.put("ulf", tmp);
-    tmp = cubies.get("ur");
-    cubies.put("ur", cubies.get("ub"));
-    cubies.put("ub", cubies.get("ul"));
-    cubies.put("ul", cubies.get("uf"));
-    cubies.put("uf", tmp);
-    return 0;
+    return turn(new int[]{urf,urb,ulb,ulf},new int[]{ur,ub,ul,uf});
   }
 
   private int turnUC() {
-    Cubie tmp;
-    tmp = cubies.get("urf");
-    cubies.put("urf", cubies.get("ulf"));
-    cubies.put("ulf", cubies.get("ulb"));
-    cubies.put("ulb", cubies.get("urb"));
-    cubies.put("urb", tmp);
-    tmp = cubies.get("ur");
-    cubies.put("ur", cubies.get("uf"));
-    cubies.put("uf", cubies.get("ul"));
-    cubies.put("ul", cubies.get("ub"));
-    cubies.put("ub", tmp);
-    return 0;
+    return turn(new int[]{urf,ulf,ulb,urb},new int[]{ur,uf,ul,ub});
   }  
 
   private int turnD() {
-    Cubie tmp;
-    tmp = cubies.get("drf");
-    cubies.put("drf", cubies.get("dlf"));
-    cubies.put("dlf", cubies.get("dlb"));
-    cubies.put("dlb", cubies.get("drb"));
-    cubies.put("drb", tmp);
-    tmp = cubies.get("dr");
-    cubies.put("dr", cubies.get("df"));
-    cubies.put("df", cubies.get("dl"));
-    cubies.put("dl", cubies.get("db"));
-    cubies.put("db", tmp);
-    return 0;
+    return turn(new int[]{drf,dlf,dlb,drb},new int[]{dr,df,dl,db});
   }
 
   private int turnDC() {
-    Cubie tmp;
-    tmp = cubies.get("drf");
-    cubies.put("drf", cubies.get("drb"));
-    cubies.put("drb", cubies.get("dlb"));
-    cubies.put("dlb", cubies.get("dlf"));
-    cubies.put("dlf", tmp);
-    tmp = cubies.get("dr");
-    cubies.put("dr", cubies.get("db"));
-    cubies.put("db", cubies.get("dl"));
-    cubies.put("dl", cubies.get("df"));
-    cubies.put("df", tmp);
-    return 0;
+    return turn(new int[]{drf,drb,dlb,dlf},new int[]{dr,db,dl,df});
   }
 
   private int turnR() {
-    Cubie tmp;
-    tmp = cubies.get("urf");
-    cubies.put("urf", cubies.get("drf"));
-    cubies.put("drf", cubies.get("drb"));
-    cubies.put("drb", cubies.get("urb"));
-    cubies.put("urb", tmp);
-    tmp = cubies.get("ur");
-    cubies.put("ur", cubies.get("rf"));
-    cubies.put("rf", cubies.get("dr"));
-    cubies.put("dr", cubies.get("rb"));
-    cubies.put("rb", tmp);
-    return 0;
+    return turn(new int[]{urf,drf,drb,urb},new int[]{ur,rf,dr,rb});
   }
 
   private int turnRC() {
-    Cubie tmp;
-    tmp = cubies.get("urf");
-    cubies.put("urf", cubies.get("urb"));
-    cubies.put("urb", cubies.get("drb"));
-    cubies.put("drb", cubies.get("drf"));
-    cubies.put("drf", tmp);
-    tmp = cubies.get("ur");
-    cubies.put("ur", cubies.get("rb"));
-    cubies.put("rb", cubies.get("dr"));
-    cubies.put("dr", cubies.get("rf"));
-    cubies.put("rf", tmp);
-    return 0;
+    return turn(new int[]{urf,urb,drb,drf},new int[]{ur,rb,dr,rf});
   }
 
   private int turnL() {
-    Cubie tmp;
-    tmp = cubies.get("ulf");
-    cubies.put("ulf", cubies.get("ulb"));
-    cubies.put("ulb", cubies.get("dlb"));
-    cubies.put("dlb", cubies.get("dlf"));
-    cubies.put("dlf", tmp);
-    tmp = cubies.get("ul");
-    cubies.put("ul", cubies.get("lb"));
-    cubies.put("lb", cubies.get("dl"));
-    cubies.put("dl", cubies.get("lf"));
-    cubies.put("lf", tmp);
-    return 0;
+    return turn(new int[]{ulf,ulb,dlb,dlf},new int[]{ul,lb,dl,lf});
   }
 
   private int turnLC() {
-    Cubie tmp;
-    tmp = cubies.get("ulf");
-    cubies.put("ulf", cubies.get("dlf"));
-    cubies.put("dlf", cubies.get("dlb"));
-    cubies.put("dlb", cubies.get("ulb"));
-    cubies.put("ulb", tmp);
-    tmp = cubies.get("ul");
-    cubies.put("ul", cubies.get("lf"));
-    cubies.put("lf", cubies.get("dl"));
-    cubies.put("dl", cubies.get("lb"));
-    cubies.put("lb", tmp);
-    return 0;
+    return turn(new int[]{ulf,dlf,dlb,ulb},new int[]{ul,lf,dl,lb});
   }
 
   private int turnF() {
-    Cubie tmp;
-    tmp = cubies.get("urf");
-    cubies.put("urf", cubies.get("ulf"));
-    cubies.put("ulf", cubies.get("dlf"));
-    cubies.put("dlf", cubies.get("drf"));
-    cubies.put("drf", tmp);
-    tmp = cubies.get("uf");
-    cubies.put("uf", cubies.get("lf"));
-    cubies.put("lf", cubies.get("df"));
-    cubies.put("df", cubies.get("rf"));
-    cubies.put("rf", tmp);
-    return 0;
+    return turn(new int[]{urf,ulf,dlf,drf},new int[]{uf,lf,df,rf});
   }
 
   private int turnFC() {
-    Cubie tmp;
-    tmp = cubies.get("urf");
-    cubies.put("urf", cubies.get("drf"));
-    cubies.put("drf", cubies.get("dlf"));
-    cubies.put("dlf", cubies.get("ulf"));
-    cubies.put("ulf", tmp);
-    tmp = cubies.get("uf");
-    cubies.put("uf", cubies.get("rf"));
-    cubies.put("rf", cubies.get("df"));
-    cubies.put("df", cubies.get("lf"));
-    cubies.put("lf", tmp);
-    return 0;
+    return turn(new int[]{urf,drf,dlf,ulf},new int[]{uf,rf,df,lf});
   }
 
   private int turnB() {
-    Cubie tmp;
-    tmp = cubies.get("urb");
-    cubies.put("urb", cubies.get("drb"));
-    cubies.put("drb", cubies.get("dlb"));
-    cubies.put("dlb", cubies.get("ulb"));
-    cubies.put("ulb", tmp);
-    tmp = cubies.get("ub");
-    cubies.put("ub", cubies.get("rb"));
-    cubies.put("rb", cubies.get("db"));
-    cubies.put("db", cubies.get("lb"));
-    cubies.put("lb", tmp);
-    return 0;
+    return turn(new int[]{urb,drb,dlb,ulb},new int[]{ub,rb,db,lb});
   }
 
   private int turnBC() {
-    Cubie tmp;
-    tmp = cubies.get("urb");
-    cubies.put("urb", cubies.get("ulb"));
-    cubies.put("ulb", cubies.get("dlb"));
-    cubies.put("dlb", cubies.get("drb"));
-    cubies.put("drb", tmp);
-    tmp = cubies.get("ub");
-    cubies.put("ub", cubies.get("lb"));
-    cubies.put("lb", cubies.get("db"));
-    cubies.put("db", cubies.get("rb"));
-    cubies.put("rb", tmp);
-    return 0;
+    return turn(new int[]{urb,ulb,dlb,drb},new int[]{ub,lb,db,rb});
   }
 
   void show() {
     rotateX(PI/3);
     rotateZ(-PI/3);
-    for (String k : cubies.keySet()) {
-      if (k.equals(""))
+    for (int k : cubies.keySet()) {
+      if (k == 0)
         continue;
+      Cubie cubie = cubies.get(k);
       int x=0, y=0, z=0;
-      if (k.indexOf('u') > -1) {
+      if (k >= upI) {
+        k -= upI;
         z += size;
       }
-      if (k.indexOf('d') > -1) {
+      if (k >= downI) {
+        k -= downI;
         z -= size;
       }
-      if (k.indexOf('r') > -1) {
+      if (k >= rightI) {
+        k -= rightI;
         y += size;
       }
-      if (k.indexOf('l') > -1) {
+      if (k >= leftI) {
+        k -= leftI;
         y -= size;
       }
-      if (k.indexOf('f') > -1) {
+      if (k >= frontI) {
+        k -= frontI;
         x -= size;
       }
-      if (k.indexOf('b') > -1) {
+      if (k >= backI) {
+        k -= backI;
         x += size;
       }
       translate(x, y, z);
-      cubies.get(k).show();
+      cubie.show();
       translate(-x, -y, -z);
     }
     rotateZ(PI/3);
@@ -288,70 +217,86 @@ class Cube {
   }
 
   void showC() {
-    String[] pos = setupPos();
-    for (String k : cubies.keySet()) {
-      if (k.equals(""))
+    int[] pos = setupPos();
+    for (int k : cubies.keySet()) {
+      if (k == 0)
         continue;
-      int index = java.util.Arrays.asList(pos).indexOf(k);
+      int index = find(pos,k);
       float y = map(index, 0, 26, 30, 780);
       int x=30;
       fill(0, 0, 0);
-      for (char c : k.toCharArray()) {
-        int newX = x;
-        if (c == 'r' || c == 'l')
-          newX += 20;
-        if (c == 'f' || c == 'b')
-          newX += 40;
-        text(c, newX, y);
+      Cubie cubie = cubies.get(k);
+      if (k >= upI) {
+        k -= upI;
+        text('u', x, y);
+      }
+      if (k >= downI) {
+        k -= downI;
+        text('d', x, y);
+      }
+      if (k >= rightI) {
+        k -= rightI;
+        text('r', x+20, y);
+      }
+      if (k >= leftI) {
+        k -= leftI;
+        text('l', x+20, y);
+      }
+      if (k >= frontI) {
+        k -= frontI;
+        text('f', x+40, y);
+      }
+      if (k >= backI) {
+        k -= backI;
+        text('b', x+40, y);
       }
       x+= 60;
       text(" : ", x, y);
       x+=40;
-      cubies.get(k).showC(x, y);
+      cubie.showC(x, y);
     }
   }
 
   private void setupCubies() {
-    String[] pos = setupPos();
+    int[] pos = setupPos();
     for (int i = 0; i < pos.length; i++) {
-      String p = pos[i];
-      cubies.put(p, new Cubie(p, size));
+      int p = pos[i];
+      cubies.put(p, new Cubie(p, size,this));
     }
   }
 
-  private String[] setupPos() {
+  private int[] setupPos() {
     int i = 0;
-    String[] pos = new String[27];
-    pos[i++] = "urf";
-    pos[i++] = "uf";
-    pos[i++] = "ulf";
-    pos[i++] = "ur";
-    pos[i++] = "u";
-    pos[i++] = "ul";
-    pos[i++] = "urb";
-    pos[i++] = "ub";
-    pos[i++] = "ulb";
+    int[] pos = new int[27];
+    pos[i++] = urf;
+    pos[i++] = uf;
+    pos[i++] = ulf;
+    pos[i++] = ur;
+    pos[i++] = upI;
+    pos[i++] = ul;
+    pos[i++] = urb;
+    pos[i++] = ub;
+    pos[i++] = ulb;
 
+    pos[i++] = rf;
+    pos[i++] = frontI;
+    pos[i++] = lf;
+    pos[i++] = rightI;
+    pos[i++] = 0;
+    pos[i++] = leftI;
+    pos[i++] = rb;
+    pos[i++] = backI;
+    pos[i++] = lb;
 
-    pos[i++] = "rf";
-    pos[i++] = "f";
-    pos[i++] = "lf";
-    pos[i++] = "r";
-    pos[i++] = "";
-    pos[i++] = "l";
-    pos[i++] = "rb";
-    pos[i++] = "b";
-    pos[i++] = "lb";
-
-    pos[i++] = "drf";
-    pos[i++] = "df";
-    pos[i++] = "dlf";
-    pos[i++] = "dr";
-    pos[i++] = "d";
-    pos[i++] = "dl";
-    pos[i++] = "drb";
-    pos[i++] = "db";
-    pos[i++] = "dlb";
+    pos[i++] = drf;
+    pos[i++] = df;
+    pos[i++] = dlf;
+    pos[i++] = dr;
+    pos[i++] = downI;
+    pos[i++] = dl;
+    pos[i++] = drb;
+    pos[i++] = db;
+    pos[i++] = dlb;
 
     return pos;
   }
@@ -378,5 +323,10 @@ class Cube {
     moves[i++] = "b2";
     moves[i++] = "b'";
     return moves;
+  }
+  
+  private int intPosFromChar(char c) {
+    int index = new String(posC).indexOf(c);
+    return posI[index];
   }
 }

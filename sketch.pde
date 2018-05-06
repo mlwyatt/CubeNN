@@ -1,9 +1,11 @@
 import peasy.*;
 import peasy.org.apache.commons.math.*;
 import peasy.org.apache.commons.math.geometry.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 Cube cube;
-float rotX, rotY;
 PeasyCam cam;
 boolean debug;
 Button up, right, front, down, left, back;
@@ -38,12 +40,10 @@ void draw() {
   cam.beginHUD();
   //ellipse(400,400,520,520);
   showButtons();
-  cam.endHUD();
   if (debug)
     cube.showC();
+  cam.endHUD();
   translate(eight/2, eight/2, 0);
-  rotateX(rotX);
-  rotateY(rotY);
   rectMode(CENTER);
   cube.show();
   popMatrix();
@@ -155,4 +155,9 @@ void showButtons() {
   downP.show();
   leftP.show();
   backP.show();
+}
+
+
+int find(int[] a, int target) {
+  return Arrays.stream(a).boxed().collect(Collectors.toList()).indexOf(target);
 }

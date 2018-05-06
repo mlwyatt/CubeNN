@@ -1,10 +1,19 @@
 import java.util.Map;
 
 class Cubie {
+  Cube cube;
   Integer up, down, right, left, front, back;
   int size;
+  int[] posI;
+  char[] posC;
+  int upI,downI,rightI,leftI,frontI,backI;
+  int id;
 
-  Cubie(String str,int s) {
+  Cubie(int p,int s,Cube cube) {
+    this.cube = cube;
+    posI = new int[]{32,16,8,4,2,1};
+    posC = new char[]{'u','d','r','l','f','b'};
+    upI=posI[0];downI=posI[1];rightI=posI[2];leftI=posI[3];frontI=posI[4];backI=posI[5];
     size = s;
     up = 0;
     down = 0;
@@ -12,30 +21,31 @@ class Cubie {
     left = 0;
     front = 0;
     back = 0;
-    setupFaces(str);
+    id = p;
+    setupFaces(p);
   }
 
-  void turn(char t, boolean clockwise) {
+  void turn(int t, boolean clockwise) {
     if (center()) {
       return;
     }
     int tmp;
-    if (t == 'u') {
+    if (t == posI[0]) {
       tmp = clockwise ? turnU() : turnUC();
     }
-    if (t == 'd') {
+    if (t == posI[1]) {
       tmp = clockwise ? turnD() : turnDC();
     }
-    if (t == 'r') {
+    if (t == posI[2]) {
       tmp = clockwise ? turnR() : turnRC();
     }
-    if (t == 'l') {
+    if (t == posI[3]) {
       tmp = clockwise ? turnL() : turnLC();
     }
-    if (t == 'f') {
+    if (t == posI[4]) {
       tmp = clockwise ? turnF() : turnFC();
     }
-    if (t == 'b') {
+    if (t == posI[5]) {
       tmp = clockwise ? turnB() : turnBC();
     }
   }
@@ -247,20 +257,30 @@ class Cubie {
     }
   }
 
-  private void setupFaces(String str) {
-    for (char c : str.toCharArray()) {
-      if (c == 'u')
-        up = getColor(c);
-      if (c == 'd')
-        down = getColor(c);
-      if (c == 'r')
-        right = getColor(c);
-      if (c == 'l')
-        left = getColor(c);
-      if (c == 'f')
-        front = getColor(c);
-      if (c == 'b')
-        back = getColor(c);
+  private void setupFaces(int p) {
+    if (p >= upI) {
+      up = getColor('u');
+      p -= upI;
+    }
+    if (p >= downI) {
+      down = getColor('d');
+      p -= downI;
+    }
+    if (p >= rightI) {
+      right = getColor('r');
+      p -= rightI;
+    }
+    if (p >= leftI) {
+      left = getColor('l');
+      p -= leftI;
+    }
+    if (p >= frontI) {
+      front = getColor('f');
+      p -= frontI;
+    }
+    if (p >= backI) {
+      back = getColor('b');
+      p -= backI;
     }
   }
 
