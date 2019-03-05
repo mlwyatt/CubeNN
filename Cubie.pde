@@ -8,6 +8,9 @@ class Cubie {
   char[] posC;
   int upI,downI,rightI,leftI,frontI,backI;
   int id;
+  PShape group;
+  PShape upFace, downFace, rightFace, leftFace, frontFace, backFace;
+  boolean inTurn;
 
   Cubie(int p,int s,Cube cube) {
     this.cube = cube;
@@ -23,6 +26,69 @@ class Cubie {
     back = 0;
     id = p;
     setupFaces(p);
+    
+    group = createShape(GROUP);
+    
+    upFace = createShape();
+    upFace.beginShape();
+    upFace.vertex(-size/2,-size/2,size/2);
+    upFace.vertex(-size/2,size/2,size/2);
+    upFace.vertex(size/2,size/2,size/2);
+    upFace.vertex(size/2,-size/2,size/2);
+    upFace.endShape(CLOSE);
+    group.addChild(upFace);
+    
+    downFace = createShape();
+    downFace.beginShape();
+    downFace.vertex(-size/2,-size/2,-size/2);
+    downFace.vertex(-size/2,size/2,-size/2);
+    downFace.vertex(size/2,size/2,-size/2);
+    downFace.vertex(size/2,-size/2,-size/2);
+    downFace.endShape(CLOSE);
+    downFace.setFill(getColor('d'));
+    group.addChild(downFace);
+    
+    rightFace = createShape();
+    rightFace.beginShape();
+    rightFace.vertex(-size/2,size/2,size/2);
+    rightFace.vertex(size/2,size/2,size/2);
+    rightFace.vertex(size/2,size/2,-size/2);
+    rightFace.vertex(-size/2,size/2,-size/2);
+    rightFace.endShape(CLOSE);
+    rightFace.setFill(getColor('r'));
+    group.addChild(rightFace);
+    
+    leftFace = createShape();
+    leftFace.beginShape();
+    leftFace.vertex(-size/2,-size/2,size/2);
+    leftFace.vertex(size/2,-size/2,size/2);
+    leftFace.vertex(size/2,-size/2,-size/2);
+    leftFace.vertex(-size/2,-size/2,-size/2);
+    leftFace.endShape(CLOSE);
+    leftFace.setFill(getColor('l'));
+    group.addChild(leftFace);
+    
+    frontFace = createShape();
+    frontFace.beginShape();
+    frontFace.vertex(-size/2,-size/2,-size/2);
+    frontFace.vertex(-size/2,size/2,-size/2);
+    frontFace.vertex(-size/2,size/2,size/2);
+    frontFace.vertex(-size/2,-size/2,size/2);
+    frontFace.endShape(CLOSE);
+    frontFace.setFill(getColor('f'));
+    group.addChild(frontFace);
+    
+    backFace = createShape();
+    backFace.beginShape();
+    backFace.vertex(size/2,-size/2,-size/2);
+    backFace.vertex(size/2,size/2,-size/2);
+    backFace.vertex(size/2,size/2,size/2);
+    backFace.vertex(size/2,-size/2,size/2);
+    backFace.endShape(CLOSE);
+    backFace.setFill(getColor('b'));
+    group.addChild(backFace);
+    
+    inTurn = false;
   }
 
   void turn(int t, boolean clockwise) {
@@ -168,92 +234,148 @@ class Cubie {
   }
   
   void show() {
+    inTurn = java.util.Arrays.asList(cube.turning).indexOf(group) > -1;
     showU();
     showD();
     showR();
     showL();
     showF();
     showB();
+    shape(group);
   }
   
   private void showU() {
-    pushMatrix();
-    translate(0,0,size/2);
-    fill(color(up));
-    rect(0,0,size,size);
-    popMatrix();
+    upFace.setFill(color(up));
+    if (inTurn && currentTurn == 'u') {
+      int x=0,y=0;
+      if (left != 0)
+        y=size;
+      if (right != 0)
+        y=-size;
+      if (front != 0)
+        x=size;
+      if (back != 0)
+        x=-size;
+      translate(x,y,0);
+      rotateZ(rotating-direction*PI/2);
+      translate(-x,-y,0);
+    }
   }
   
   private void showD() {
-    pushMatrix();
-    translate(0,0,-size/2);
-    fill(color(down));
-    rect(0,0,size,size);
-    popMatrix();
+    downFace.setFill(color(down));
+    if (inTurn && currentTurn == 'd') {
+      int x=0,y=0;
+      if (left != 0)
+        y=size;
+      if (right != 0)
+        y=-size;
+      if (front != 0)
+        x=size;
+      if (back != 0)
+        x=-size;
+      translate(x,y,0);
+      rotateZ(-rotating+direction*PI/2);
+      translate(-x,-y,0);
+    }
   }
   
   private void showR() {
-    pushMatrix();
-    translate(0,size/2,0);
-    rotateX(PI/2);
-    fill(color(right));
-    rect(0,0,size,size);
-    popMatrix();
+    rightFace.setFill(color(right));
+    if (inTurn && currentTurn == 'r') {
+      int x=0,z=0;
+      if (up != 0)
+        z=-size;
+      if (down != 0)
+        z=size;
+      if (front != 0)
+        x=size;
+      if (back != 0)
+        x=-size;
+      translate(x,0,z);
+      rotateY(rotating-direction*PI/2);
+      translate(-x,0,-z);
+    }
   }
   
   private void showL() {
-    pushMatrix();
-    translate(0,-size/2,0);
-    rotateX(PI/2);
-    fill(color(left));
-    rect(0,0,size,size);
-    popMatrix();
+    leftFace.setFill(color(left));
+    if (inTurn && currentTurn == 'l') {
+      int x=0,z=0;
+      if (up != 0)
+        z=-size;
+      if (down != 0)
+        z=size;
+      if (front != 0)
+        x=size;
+      if (back != 0)
+        x=-size;
+      translate(x,0,z);
+      rotateY(-rotating+direction*PI/2);
+      translate(-x,0,-z);
+    }
   }
   
   private void showF() {
-    pushMatrix();
-    translate(-size/2,0,0);
-    rotateX(PI/2);
-    rotateY(PI/2);
-    fill(color(front));
-    rect(0,0,size,size);
-    popMatrix();
+    frontFace.setFill(color(front));
+    if (inTurn && currentTurn == 'f') {
+      int y=0,z=0;
+      if (up != 0)
+        z=-size;
+      if (down != 0)
+        z=size;
+      if (left != 0)
+        y=size;
+      if (right != 0)
+        y=-size;
+      translate(0,y,z);
+      rotateX(-rotating+direction*PI/2);
+      translate(0,-y,-z);
+    }
   }
   
   private void showB() {
-    pushMatrix();
-    translate(size/2,0,0);
-    rotateX(PI/2);
-    rotateY(PI/2);
-    fill(color(back));
-    rect(0,0,size,size);
-    popMatrix();
+    backFace.setFill(color(back));
+    if (inTurn && currentTurn == 'b') {
+      int y=0,z=0;
+      if (up != 0)
+        z=-size;
+      if (down != 0)
+        z=size;
+      if (left != 0)
+        y=size;
+      if (right != 0)
+        y=-size;
+      translate(0,y,z);
+      rotateX(rotating-direction*PI/2);
+      translate(0,-y,-z);
+    }
   }
 
-  void showC(int x, float y) {
+  void showC(int x, double y) {
     if (up != 0) {
       fill(color(up));
-      text('u', x, y);
+      text('u', (float)x, (float)y);
     }
     if (down != 0) {
       fill(color(down));
-      text('d', x, y);
+      text('d', (float)x, (float)y);
     }
     if (right != 0) {
       fill(color(right));
-      text('r', x+20, y);
+      text('r', (float)x+20, (float)y);
     }
     if (left != 0) {
       fill(color(left));
-      text('l', x+20, y);
+      text('l', (float)x+20, (float)y);
     }
     if (front != 0) {
       fill(color(front));
-      text('f', x+40, y);
+      text('f', (float)x+40, (float)y);
     }
     if (back != 0) {
       fill(color(back));
-      text('b', x+40, y);
+      text('b', (float)x+40, (float)y);
     }
   }
 

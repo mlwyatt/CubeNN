@@ -9,6 +9,8 @@ class Cube {
   int urf,urb,ulb,ulf,drf,drb,dlf,dlb;
   int ur,ub,ul,uf,rf,rb,lf,lb,dr,db,dl,df;
   int size;
+  PShape[] turning;
+  boolean isTurning;
 
   Cube() {
     upI=posI[0];downI=posI[1];rightI=posI[2];leftI=posI[3];frontI=posI[4];backI=posI[5];
@@ -34,11 +36,18 @@ class Cube {
     dl = downI+leftI;
     df = downI+frontI;
     reset();
+    resetTurning();
   }
   
   void reset() {
     size = 100;
     setupCubies();
+  }
+  
+  void resetTurning() {
+    isTurning = false;
+    currentTurn = ' ';
+    turning = new PShape[9];
   }
 
   void scramble() {
@@ -58,17 +67,22 @@ class Cube {
       prev = moves[index].charAt(0);
       turn(moves[index]);
     }
+    resetTurning();
   }
 
   void turn(String move) {
     char[] chars = move.toCharArray();
     int t = intPosFromChar(chars[0]);
+    currentTurn = chars[0];
     if (chars.length == 1) { // clock-wise
+      direction = 1;
       turn(t, true);
     } else if (chars[1] == '2') { // clock-wise twice
+      direction = 1;
       turn(t, true);
       turn(t, true);
     } else { // counter-clock-wise
+      direction = -1;
       turn(t, false);
     }
   }
@@ -127,61 +141,107 @@ class Cube {
     cubies.put(edges[edges.length-1],tmp);
     return 0;
   }
+  
+  private void showRotate(int[] corners, int[] edges,int center) {
+    isTurning = true;
+    for(int i = 0; i < corners.length; i++) {
+      turning[i] = cubies.get(corners[i]).group;
+    }
+    for(int i = 0; i < edges.length; i++) {
+      turning[i+4] = cubies.get(edges[i]).group;
+    }
+    turning[8] = cubies.get(center).group;
+  }
 
   private int turnU() {
-    return turn(new int[]{urf,urb,ulb,ulf},new int[]{ur,ub,ul,uf});
+    int[] corners = new int[]{urf,urb,ulb,ulf};
+    int[] edges = new int[]{ur,ub,ul,uf};
+    showRotate(corners,edges,upI);
+    return turn(corners,edges);
   }
 
   private int turnUC() {
-    return turn(new int[]{urf,ulf,ulb,urb},new int[]{ur,uf,ul,ub});
+    int[] corners = new int[]{urf,ulf,ulb,urb};
+    int[] edges = new int[]{ur,uf,ul,ub};
+    showRotate(corners,edges,upI);
+    return turn(corners,edges);
   }  
 
   private int turnD() {
-    return turn(new int[]{drf,dlf,dlb,drb},new int[]{dr,df,dl,db});
+    int[] corners = new int[]{drf,dlf,dlb,drb};
+    int[] edges = new int[]{dr,df,dl,db};
+    showRotate(corners,edges,downI);
+    return turn(corners,edges);
   }
 
   private int turnDC() {
-    return turn(new int[]{drf,drb,dlb,dlf},new int[]{dr,db,dl,df});
+    int[] corners = new int[]{drf,drb,dlb,dlf};
+    int[] edges = new int[]{dr,db,dl,df};
+    showRotate(corners,edges,downI);
+    return turn(corners,edges);
   }
 
   private int turnR() {
-    return turn(new int[]{urf,drf,drb,urb},new int[]{ur,rf,dr,rb});
+    int[] corners = new int[]{urf,drf,drb,urb};
+    int[] edges = new int[]{ur,rf,dr,rb};
+    showRotate(corners,edges,rightI);
+    return turn(corners,edges);
   }
 
   private int turnRC() {
-    return turn(new int[]{urf,urb,drb,drf},new int[]{ur,rb,dr,rf});
+    int[] corners = new int[]{urf,urb,drb,drf};
+    int[] edges = new int[]{ur,rb,dr,rf};
+    showRotate(corners,edges,rightI);
+    return turn(corners,edges);
   }
 
   private int turnL() {
-    return turn(new int[]{ulf,ulb,dlb,dlf},new int[]{ul,lb,dl,lf});
+    int[] corners = new int[]{ulf,ulb,dlb,dlf};
+    int[] edges = new int[]{ul,lb,dl,lf};
+    showRotate(corners,edges,leftI);
+    return turn(corners,edges);
   }
 
   private int turnLC() {
-    return turn(new int[]{ulf,dlf,dlb,ulb},new int[]{ul,lf,dl,lb});
+    int[] corners = new int[]{ulf,dlf,dlb,ulb};
+    int[] edges = new int[]{ul,lf,dl,lb};
+    showRotate(corners,edges,leftI);
+    return turn(corners,edges);
   }
 
   private int turnF() {
-    return turn(new int[]{urf,ulf,dlf,drf},new int[]{uf,lf,df,rf});
+    int[] corners = new int[]{urf,ulf,dlf,drf};
+    int[] edges = new int[]{uf,lf,df,rf};
+    showRotate(corners,edges,frontI);
+    return turn(corners,edges);
   }
 
   private int turnFC() {
-    return turn(new int[]{urf,drf,dlf,ulf},new int[]{uf,rf,df,lf});
+    int[] corners = new int[]{urf,drf,dlf,ulf};
+    int[] edges = new int[]{uf,rf,df,lf};
+    showRotate(corners,edges,frontI);
+    return turn(corners,edges);
   }
 
   private int turnB() {
-    return turn(new int[]{urb,drb,dlb,ulb},new int[]{ub,rb,db,lb});
+    int[] corners = new int[]{urb,drb,dlb,ulb};
+    int[] edges = new int[]{ub,rb,db,lb};
+    showRotate(corners,edges,backI);
+    return turn(corners,edges);
   }
 
   private int turnBC() {
-    return turn(new int[]{urb,ulb,dlb,drb},new int[]{ub,lb,db,rb});
+    int[] corners = new int[]{urb,ulb,dlb,drb};
+    int[] edges = new int[]{ub,lb,db,rb};
+    showRotate(corners,edges,backI);
+    return turn(corners,edges);
   }
 
   void show() {
-    rotateX(PI/3);
-    rotateZ(-PI/3);
     for (int k : cubies.keySet()) {
       if (k == 0)
         continue;
+      pushMatrix();
       Cubie cubie = cubies.get(k);
       int x=0, y=0, z=0;
       if (k >= upI) {
@@ -210,10 +270,8 @@ class Cube {
       }
       translate(x, y, z);
       cubie.show();
-      translate(-x, -y, -z);
+      popMatrix();
     }
-    rotateZ(PI/3);
-    rotateX(-PI/3);
   }
 
   void showC() {
@@ -222,36 +280,36 @@ class Cube {
       if (k == 0)
         continue;
       int index = find(pos,k);
-      float y = map(index, 0, 26, 30, 780);
+      double y = map(index, 0, 26, 30, 780);
       int x=30;
       fill(0, 0, 0);
       Cubie cubie = cubies.get(k);
       if (k >= upI) {
         k -= upI;
-        text('u', x, y);
+        text('u', (float)x, (float)y);
       }
       if (k >= downI) {
         k -= downI;
-        text('d', x, y);
+        text('d', (float)x, (float)y);
       }
       if (k >= rightI) {
         k -= rightI;
-        text('r', x+20, y);
+        text('r', (float)x+20, (float)y);
       }
       if (k >= leftI) {
         k -= leftI;
-        text('l', x+20, y);
+        text('l', (float)x+20, (float)y);
       }
       if (k >= frontI) {
         k -= frontI;
-        text('f', x+40, y);
+        text('f', (float)x+40, (float)y);
       }
       if (k >= backI) {
         k -= backI;
-        text('b', x+40, y);
+        text('b', (float)x+40, (float)y);
       }
       x+= 60;
-      text(" : ", x, y);
+      text(" : ", (float)x, (float)y);
       x+=40;
       cubie.showC(x, y);
     }

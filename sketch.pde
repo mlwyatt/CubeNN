@@ -4,6 +4,8 @@ import peasy.org.apache.commons.math.geometry.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.swing.Timer;
+import java.util.concurrent.FutureTask;
 
 Cube cube;
 PeasyCam cam;
@@ -12,6 +14,9 @@ Button up, right, front, down, left, back;
 Button upP, rightP, frontP, downP, leftP, backP;
 int eight;
 boolean pause;
+float rotating;
+int direction;
+char currentTurn;
 
 void setup() {
   pause = false;
@@ -31,53 +36,82 @@ void setup() {
   //cam.setWheelHandler(null); // throws NullPointerException
   cam.setCenterDragHandler(null);
   cam.setRightDragHandler(null);
+  rotating = 0;
+  direction = 0;
+  frameRate(30);
+}
+void showCube() {
+  pushMatrix();
+  translate(eight/2, eight/2, 0);
+  rotateX(PI/3);
+  rotateZ(-PI/3);
+  rectMode(CENTER);
+  stroke(255,0,0);
+  line(0,0,0,100,0,0);
+  stroke(0,255,0);
+  line(0,0,0,0,100,0);
+  stroke(0,0,255);
+  line(0,0,0,0,0,100);
+  stroke(128,128,128);
+  if(!debug)
+  cube.show();
+  popMatrix();
 }
 
 void draw() {
   textSize(32);
   background(128, 128, 128);
+  strokeWeight(10);
   pushMatrix();
   cam.beginHUD();
-  //ellipse(400,400,520,520);
   showButtons();
   if (debug)
     cube.showC();
   cam.endHUD();
-  translate(eight/2, eight/2, 0);
-  rectMode(CENTER);
-  cube.show();
   popMatrix();
+  showCube();
+  if (cube.isTurning) {
+    rotating += direction*PI/30;
+    if (abs(rotating) > PI/2) {
+      rotating = 0;
+      cube.resetTurning();
+    }
+  }
 }
 
 void keyPressed() {
-  if (key == 'u')
-    cube.turn("u");
-  if (key == 'd')
-    cube.turn("d");
-  if (key == 'r')
-    cube.turn("r");
-  if (key == 'l')
-    cube.turn("l");
-  if (key == 'f')
-    cube.turn("f");
-  if (key == 'b')
-    cube.turn("b");
-  if (key == 'U')
-    cube.turn("u'");
-  if (key == 'D')
-    cube.turn("d'");
-  if (key == 'R')
-    cube.turn("r'");
-  if (key == 'L')
-    cube.turn("l'");
-  if (key == 'F')
-    cube.turn("f'");
-  if (key == 'B')
-    cube.turn("b'");
-  if (key == 's')
-    cube.scramble();
+  if (!cube.isTurning) {
+    if (key == 'u')
+      cube.turn("u");
+    if (key == 'd')
+      cube.turn("d");
+    if (key == 'r')
+      cube.turn("r");
+    if (key == 'l')
+      cube.turn("l");
+    if (key == 'f')
+      cube.turn("f");
+    if (key == 'b')
+      cube.turn("b");
+    if (key == 'U')
+      cube.turn("u'");
+    if (key == 'D')
+      cube.turn("d'");
+    if (key == 'R')
+      cube.turn("r'");
+    if (key == 'L')
+      cube.turn("l'");
+    if (key == 'F')
+      cube.turn("f'");
+    if (key == 'B')
+      cube.turn("b'");
+    if (key == 's')
+      cube.scramble();
+    if (keyCode == ENTER) {
+      cube.reset();
+    }
+  }
   if (key == 32) {
-    cube.reset();
     debug = !debug;
   }
 }
@@ -160,4 +194,8 @@ void showButtons() {
 
 int find(int[] a, int target) {
   return Arrays.stream(a).boxed().collect(Collectors.toList()).indexOf(target);
+}
+
+public static void setTimeout(Runnable runnable, int delay){
+  new Thread(runnable).start();
 }
